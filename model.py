@@ -1,24 +1,30 @@
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
+import configparser
 
 
-# hyperparameters
-batch_size = 32
-block_size = 8
-max_iters = 5000
-eval_interval = 500
-learning_rate = 3e-4
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-eval_iters = 100
-n_embed = 128
-n_head = 6
-n_layer = 6
-dropout = 0.2
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-torch.manual_seed(42)
+# Access hyperparameters
+batch_size = int(config.getint('HYPERPARAMETERS', 'batch_size'))
+block_size = int(config.getint('HYPERPARAMETERS', 'block_size'))
+max_iters = int(config.getint('HYPERPARAMETERS', 'max_iters'))
+eval_interval = int(config.getint('HYPERPARAMETERS', 'eval_interval'))
+learning_rate = int(config.getfloat('HYPERPARAMETERS', 'learning_rate'))
+device = int(config.get('HYPERPARAMETERS', 'device'))
+eval_iters = int(config.getint('HYPERPARAMETERS', 'eval_iters'))
+n_embed = int(config.getint('HYPERPARAMETERS', 'n_embed'))
+n_head = int(config.getint('HYPERPARAMETERS', 'n_head'))
+n_layer = int(config.getint('HYPERPARAMETERS', 'n_layer'))
+dropout = int(config.getfloat('HYPERPARAMETERS', 'dropout'))
+random_seed = int(config.getint('HYPERPARAMETERS', 'random_seed'))
 
-with open('sherlock.txt', 'r', encoding="utf-8") as f:
+torch.manual_seed(random_seed)
+
+input_file = config.get('FILE', 'input_file')
+with open(input_file, 'r', encoding="utf-8") as f:
     text = f.read()
 
 
@@ -189,5 +195,6 @@ generated = model.generate(idx, max_new_tokens=500)
 decoded = decode(generated[0].tolist())
 print(decoded)
 
-with open('output.txt', 'w', encoding="utf-8") as f:
+output_file = config.get('FILE', 'output_file')
+with open(output_file, 'w', encoding="utf-8") as f:
     f.write(decoded)
