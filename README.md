@@ -33,3 +33,12 @@ All hyperparameters and input/output file paths are stored in the `config.ini` f
 
 The model will train on the Sherlock Holmes text file specified in the `config.ini` file as sherlock.txt.
 
+
+# This is a Python code cell in a Markdown README
+
+def hello_world():
+    print("Hello, world!")
+
+hello_world()
+
+
