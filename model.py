@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
+import torch.nn.functional as F
+import numpy as np
 import configparser
-
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -13,7 +13,7 @@ block_size = config.getint('HYPERPARAMETERS', 'block_size')
 max_iters = config.getint('HYPERPARAMETERS', 'max_iters')
 eval_interval = config.getint('HYPERPARAMETERS', 'eval_interval')
 learning_rate = config.getfloat('HYPERPARAMETERS', 'learning_rate')
-device = str(config.get('HYPERPARAMETERS', 'device'))
+device = config.get('HYPERPARAMETERS', 'device')
 eval_iters = config.getint('HYPERPARAMETERS', 'eval_iters')
 n_embed = config.getint('HYPERPARAMETERS', 'n_embed')
 n_head = config.getint('HYPERPARAMETERS', 'n_head')
@@ -27,7 +27,6 @@ input_file = config.get('FILE', 'input_file')
 with open(input_file, 'r', encoding="utf-8") as f:
     text = f.read()
 
-
 # unique characters in the text
 chars = sorted(set(text))
 vocab_size = len(chars)
@@ -40,7 +39,7 @@ decode = lambda x: ''.join([itos[i] for i in x])
 
 # Train and Test split
 data = torch.tensor(encode(text), dtype=torch.long)
-n = int(0.9*len(data))
+n = int(0.9 * len(data))
 train_data = data[:n]
 test_data = data[n:]
 
@@ -48,8 +47,8 @@ test_data = data[n:]
 def get_batch(split):
     data = train_data if split == 'train' else test_data
     ix = torch.randint(len(data) - block_size, (batch_size,))
-    x = torch.stack([data[i:i+block_size] for i in ix])
-    y = torch.stack([data[i+1:i+block_size+1] for i in ix])
+    x = torch.stack([data[i:i + block_size] for i in ix])
+    y = torch.stack([data[i + 1:i + block_size + 1] for i in ix])
     return x, y
 
 @torch.no_grad()
@@ -78,17 +77,17 @@ class Head(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        B,T,C = x.shape
+        B, T, C = x.shape
         k = self.key(x)   
         q = self.query(x) 
         
-        wei = q @ k.transpose(-2,-1) * k.shape[-1]**-0.5 # (B, T, hs) @ (B, hs, T) -> (B, T, T)
-        wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) # (B, T, T)
-        wei = F.softmax(wei, dim=-1) 
-        wei = self.dropout(wei)
+        weighted_score = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
+        weighted_score = weighted_score.masked_fill(self.tril[:T, :T] == 0, float('-inf'))
+        weighted_score = F.softmax(weighted_score, dim=-1) 
+        weighted_score = self.dropout(weighted_score)
         
         v = self.value(x) 
-        out = wei @ v 
+        out = weighted_score @ v 
         return out
 
 
@@ -109,9 +108,9 @@ class FeedForward(nn.Module):
     def __init__(self, n_embed):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(n_embed, 4*n_embed),
+            nn.Linear(n_embed, 4 * n_embed),
             nn.ReLU(),
-            nn.Linear(4*n_embed, n_embed),
+            nn.Linear(4 * n_embed, n_embed),
             nn.Dropout(dropout),
         )
 
@@ -154,8 +153,8 @@ class DecoderLanguageModel(nn.Module):
             loss = None
         else:
             B, T, C = logits.shape
-            logits = logits.view(B*T, C)
-            targets = targets.view(B*T)
+            logits = logits.view(B * T, C)
+            targets = targets.view(B * T)
             loss = F.cross_entropy(logits, targets)
         return logits, loss
 
@@ -172,7 +171,7 @@ class DecoderLanguageModel(nn.Module):
 
 model = DecoderLanguageModel()
 m = model.to(device)
-print(sum(p.numel() for p in m.parameters())/1e6, "M parameters")
+print(sum(p.numel() for p in m.parameters()) / 1e6, "M parameters")
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
