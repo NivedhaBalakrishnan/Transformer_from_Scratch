@@ -39,4 +39,4 @@ python3 model.py
 
 The model will train on the Sherlock Holmes text file specified in the `config.ini` file as sherlock.txt.
 
-
+Please review the generated output in the 'output.txt' file. While the generated text may not be perfect, you can potentially improve its performance by increasing the embedding dimension, number of heads, and layers in the model.
