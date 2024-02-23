@@ -24,7 +24,7 @@ All hyperparameters and input/output file paths are stored in the `config.ini` f
 
 1. Clone this repository:
 ```python
-git clone 
+git clone https://github.com/NivedhaBalakrishnan/Transformer_from_Scratch.git
 ```
 
 2. Run the model:
