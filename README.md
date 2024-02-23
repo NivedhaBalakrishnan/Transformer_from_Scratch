@@ -23,22 +23,15 @@ The transformer model is implemented step-by-step, including:
 All hyperparameters and input/output file paths are stored in the `config.ini` file. To run and evaluate the transformer model:
 
 1. Clone this repository:
+```python
+git clone 
+```
 
-  
-2. Navigate to the repository directory:
-
-
-3. Run the model:
-
+2. Run the model:
+```python
+python3 model.py 
+```
 
 The model will train on the Sherlock Holmes text file specified in the `config.ini` file as sherlock.txt.
-
-
-# This is a Python code cell in a Markdown README
-
-def hello_world():
-    print("Hello, world!")
-
-hello_world()
 
 
